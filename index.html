@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0877ca"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>RAGE Score</title>
+<style>
+:root{color-scheme:dark;--bg:#0759a1;--panel:#075aa3;--line:#f7e9d6;--text:#fff;--muted:#d9eaff;--accent:#e5262f;--cream:#fff0db;--blue:#087bd0}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));max-width:650px;margin-inline:auto;min-height:100vh;background:radial-gradient(ellipse at 48% 15%,#39b4f7 0,#0877ca 36%,#03417d 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.28;background:repeating-conic-gradient(from 3deg at 50% 22%,transparent 0deg 7deg,rgba(255,255,255,.24) 7.5deg 8.5deg,transparent 9deg 17deg);z-index:-1}
+header{text-align:center;padding:20px 0 16px;position:relative}
+header .logo{display:inline-flex;align-items:center;justify-content:center;background:#fff;border:3px solid #111;border-radius:12px;padding:4px 7px;box-shadow:0 4px 0 #d8212b;transform:rotate(-2deg)}
+header .logo img{display:block;width:112px;height:58px;object-fit:cover;border-radius:5px}
+h1{font-size:clamp(34px,8vw,48px);margin:13px 0 2px;color:#fff;letter-spacing:1px;font-weight:1000;-webkit-text-stroke:2px #e5262f;text-shadow:3px 4px 0 #14243b,-2px -2px 0 #14243b,2px -2px 0 #14243b,-2px 2px 0 #14243b}
+header p{color:#fff;margin:4px 0 0;font-weight:650;text-shadow:1px 2px #03417d}
+nav{display:flex;gap:8px;margin:14px 0 18px}
+.tab,button{border:2px solid #fff0db;background:#064b8a;color:#fff;border-radius:12px;padding:12px 14px;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 4px 0 #082b4c}
+.tab{flex:1}.tab.active,.primary{background:#e5262f;border-color:#fff0db;color:#fff;text-shadow:1px 1px #86131b;box-shadow:0 4px 0 #8b101b}
+.panel{background:linear-gradient(145deg,rgba(14,123,201,.98),rgba(3,67,130,.98));border:3px solid var(--cream);outline:2px solid #e5262f;border-radius:14px;padding:14px;margin:14px 0;box-shadow:4px 5px 0 rgba(2,24,49,.5)}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.muted{color:#d9eaff;font-size:13px}
+.player{border-bottom:1px solid rgba(255,240,219,.38);padding:12px 0}.player:last-child{border:0}.name{font-weight:850;font-size:17px;overflow-wrap:anywhere}
+.score{font-size:21px;font-weight:950;color:#fff19a;white-space:nowrap;text-shadow:1px 2px #07345d}
+input{min-width:0;width:100%;background:#033e76;border:2px solid #fff0db;border-radius:9px;color:#fff;padding:11px;font:inherit}input[type=number]{text-align:center;padding:10px 4px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.field label{display:block;color:#e5f2ff;font-size:12px;margin-bottom:5px}
+.stepper{display:flex;align-items:center;gap:6px}.stepper button{padding:9px 12px;background:#064b8a;border-color:#fff0db}.stepper input{flex:1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}.primary{width:100%;padding:15px;margin:10px 0}
+.small{padding:7px 10px;font-size:13px}.yes-bid{width:100%;margin-top:10px;background:#e9232e;border-color:#fff;color:#fff;box-shadow:0 4px 0 #8f1119}.rank{font-size:22px;width:34px}.hide{display:none!important}.warning{color:#fff0a8;font-size:13px}.roundtitle{font-size:20px;font-weight:950;text-shadow:1px 2px #07345d}
+.historyrow{display:grid;grid-template-columns:60px 1fr auto;gap:8px;padding:9px 0;border-bottom:1px solid rgba(255,240,219,.35)}
+footer{text-align:center;color:#d9eaff;font-size:12px;padding:14px 0;text-shadow:1px 1px #03417d}
+
+#liveScoreTable th,#liveScoreTable td{border:1px solid #64748b;padding:8px 6px;text-align:center;vertical-align:middle}
+#liveScoreTable thead th{background:#e5262f;color:#fff;font-weight:850;position:sticky;top:0}
+#liveScoreTable tbody th{background:#dbeafe;text-align:left;white-space:nowrap}
+#liveScoreTable td .tricks{font-size:16px;font-weight:900;color:#0759a1}
+#liveScoreTable td .points{font-size:12px;color:#334155}
+#liveScoreTable tr.current-round td,#liveScoreTable tr.current-round th{background:#fff0bd}
+#liveScoreTable tr.current-round td .points{color:#a51f28;font-weight:900}
+#liveScoreTable tfoot th,#liveScoreTable tfoot td{background:#dbeafe;font-weight:900}
+
+#liveScoreTable th,#liveScoreTable td{padding:5px 2px!important;overflow-wrap:anywhere;word-break:normal;font-size:clamp(9px,2.7vw,12px)}
+#liveScoreTable thead th:first-child,#liveScoreTable tbody th,#liveScoreTable tfoot th{width:62px}
+#liveScoreTable td .tricks{font-size:clamp(10px,3vw,14px)!important}
+#liveScoreTable td .points{font-size:clamp(9px,2.5vw,11px)!important}
+#sheetHistory .historyrow{grid-template-columns:40px minmax(0,1fr) 48px;gap:4px;font-size:11px;padding:7px 0}
+#sheetHistory .historyrow span{overflow-wrap:anywhere}
+
+.rules-wrap{max-width:900px;margin:18px auto 26px;padding:0 12px}
+.rules-panel{border:3px solid var(--line);box-shadow:0 4px 0 #142d47}
+.rules-panel summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rules-panel summary::-webkit-details-marker{display:none}
+.rules-panel summary:after{content:"＋";font-size:20px;flex-shrink:0}
+.rules-panel[open] summary:after{content:"−"}
+.rules-panel h3{font-size:16px;margin:18px 0 7px;color:#fff}
+.rules-panel ul{padding-left:20px;margin:6px 0 12px}
+.rules-panel li{margin:7px 0;line-height:1.4;color:var(--text);font-size:14px}
+.rules-panel strong{color:#fff2c4}
+
+/* Kleine Komfortverbesserungen für das Spielen am iPhone */
+button{touch-action:manipulation}
+#undoFromRanking{width:100%;margin-top:8px}
+#roundPlayers .panel{padding:12px}
+#roundPlayers .fields{gap:8px}
+@media(max-width:390px){
+  nav{gap:5px}
+  .tab{padding:10px 6px;font-size:13px}
+  #roundPlayers .fields{grid-template-columns:1fr 1fr;gap:6px}
+  #roundPlayers .stepper{gap:4px}
+  #roundPlayers .stepper button{padding:8px 9px}
+  #roundPlayers .stepper input{padding:9px 2px}
+}
+
+.trick-check{margin:10px 0;padding:10px 12px;border:2px solid #fff0db;border-radius:10px;background:rgba(2,44,84,.45);color:#fff;font-weight:750}
+.trick-check strong{font-size:18px;color:#fff2c4}
+.trick-check.trick-ok{background:#e5f8e9;color:#14532d;border-color:#b7e4c0}
+.trick-check.trick-ok strong{color:#14532d}
+
+/* Einheitliche, app-eigene Meldungen */
+.message-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(0,15,35,.72);backdrop-filter:blur(5px)}
+.message-overlay.hide{display:none!important}
+.message-card{width:min(100%,440px);border:2px solid #fff0db;border-radius:22px;background:linear-gradient(145deg,#0877ca,#03417d);box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 3px #e5262f;padding:24px 20px 18px;text-align:center}
+.message-mark{width:54px;height:54px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:#e5262f;border:2px solid #fff0db;font-size:27px;font-weight:900}
+.message-title{font-size:22px;font-weight:950;margin:0 0 10px;text-shadow:1px 2px #07345d}
+.message-text{font-size:16px;line-height:1.5;color:#f1f7ff;margin:0 0 20px;white-space:pre-line}
+.message-card button{width:100%;padding:13px 16px;border-radius:13px;background:#e5262f;border:2px solid #fff0db;color:#fff;font-size:17px;font-weight:900;box-shadow:0 4px 0 #8b101b}
+
+</style>
+<style>.message-actions{display:flex;gap:12px;justify-content:center;margin-top:18px}.message-actions button{flex:1}.message-cancel{background:#0b4f86!important;color:#fff!important;border:2px solid #fff!important}.message-cancel.hide{display:none!important}</style>
+</head>
+<body>
+<header><div class="logo"><img src="amigo-logo.png" alt="AMIGO"></div><h1>RAGE SCORE</h1><p>Der kultige Stich-Punktezähler</p></header>
+<nav><button class="tab active" data-tab="game">Spiel</button><button class="tab" data-tab="scoreSheet">Spielzettel</button><button class="tab" data-tab="ranking">Rangliste</button></nav>
+<main id="game">
+ <div id="setupPanel" class="panel hide">
+   <div class="roundtitle">🎴 1. Spielrichtung wählen</div>
+   <p>In welcher Richtung möchtet ihr spielen?</p>
+   <div class="actions">
+     <button id="startUp" class="primary">1 → 10</button>
+     <button id="startDown" class="primary">10 → 1</button>
+   </div>
+   <p class="muted">Als Nächstes legt ihr Spieleranzahl und Namen fest.</p>
+ </div>
+ <div id="setupPlayersPanel" class="panel hide">
+   <div class="roundtitle">👥 2. Spieler festlegen</div>
+   <p class="muted">Wählt die Anzahl der Mitspieler und tragt ihre Namen ein.</p>
+   <label for="setupPlayerCount" class="muted">Anzahl der Spieler</label>
+   <select id="setupPlayerCount" style="width:100%;margin:6px 0 12px;padding:12px;border:2px solid #fff0db;border-radius:9px;background:#033e76;color:#fff;font:inherit">
+     <option value="3">3 Spieler</option><option value="4" selected>4 Spieler</option><option value="5">5 Spieler</option><option value="6">6 Spieler</option><option value="7">7 Spieler</option><option value="8">8 Spieler</option>
+   </select>
+   <div id="setupPlayerNames"></div>
+   <div class="actions">
+     <button id="backToDirection">← Zurück</button>
+     <button id="beginGameButton" class="primary">Spiel beginnen →</button>
+   </div>
+ </div>
+ <div id="returnPrompt" class="panel hide">
+   <div class="roundtitle">🏁 Hinrunde geschafft!</div>
+   <p>Möchtet ihr eine Rückrunde spielen? Die Punkte aus der Hinrunde bleiben erhalten.</p>
+   <div class="actions">
+     <button id="playReturn" class="primary">Ja, Rückrunde spielen</button>
+     <button id="finishAfterOut" class="primary">Nein, Spiel beenden</button>
+   </div>
+ </div>
+ <div class="panel row between" id="roundStatus"><div><div class="muted">AKTUELLE RUNDE</div><div class="roundtitle" id="roundLabel">Runde 1</div></div><div style="text-align:right"><div class="muted">SPIELER</div><div class="roundtitle" id="playerCount">4</div></div></div>
+ <div class="panel" id="roundOverview">
+   <div class="roundtitle">Stich-Übersicht dieser Runde</div>
+   <div id="roundOverviewRows"></div>
+ </div>
+ <div id="roundPlayers"></div>
+ <p class="muted" id="scoringHelp">Punkte: 1 pro Stich, bei Durchmarsch 2 pro Stich (außer bei nur 1 Stich), +10 bei richtiger Ansage oder −5 bei falscher Ansage. Sonderkarten: +5/−5 je Karte.</p>
+ <div id="trickCheck" class="trick-check muted">Stiche eingetragen: <strong id="trickTotal">0</strong> / <strong id="trickTarget">0</strong></div><div id="err" class="warning"></div>
+ <button class="primary" id="submitBids">Ansagen verbindlich abgeben →</button><button class="primary hide" id="finish">Runde abschließen →</button>
+ <div class="actions"><button id="undo" class="small">Letzte Runde rückgängig</button><button id="newGame" class="small">Neues Spiel</button></div>
+</main>
+<main id="ranking" class="hide"><div class="panel"><div class="roundtitle">🏆 Gesamtstand</div><div id="rankList"></div><section id="cardStats" class="panel hide"><div class="roundtitle">🎴 Sonderkarten-Statistik</div><div id="cardStatsRows"></div><p class="muted">Gleichstände werden gemeinsam angezeigt. Die Statistik zeigt nur, wer +5- und −5-Karten bekommen hat. Sie zählt die Angaben aus allen abgeschlossenen Runden.</p></section><div class="actions"><button id="undoFromRanking" class="small">↶ Letzte Runde korrigieren</button></div></div></main>
+<main id="scoreSheet" class="hide">
+ <div class="panel">
+  <div class="roundtitle">📋 Live-Spielzettel</div>
+  <div class="actions"><button id="exportBackup" class="small">Spielstand sichern ⤓</button><button id="importBackupButton" class="small">Spielstand wiederherstellen ⤒</button><input id="importBackup" type="file" accept="application/json,.json" class="hide"></div>
+  <p class="muted">Spielzettel und Rundenverlauf auf einen Blick – ohne seitliches Scrollen.</p>
+  <div class="live-sheet-scroll" style="width:100%;overflow-x:hidden;border:2px solid #fff0db;border-radius:8px;background:#fff;color:#17283b">
+   <table id="liveScoreTable" style="table-layout:fixed;border-collapse:collapse;width:100%;min-width:0;color:#17283b;font-size:11px">
+    <thead id="liveScoreHead"></thead><tbody id="liveScoreBody"></tbody><tfoot id="liveScoreFoot"></tfoot>
+   </table>
+  </div>
+  <p class="muted">Stiche oben, Punkte darunter. Die laufende Runde ist gelb markiert.</p>
+  <div class="roundtitle" style="margin-top:16px">Rundenverlauf</div>
+  <div id="sheetHistory"></div>
+ </div>
+</main>
+<main id="settings" class="hide"><div class="panel"><div class="roundtitle">Mitspieler</div><p class="muted">Namen ändern oder Spieler hinzufügen/entfernen.</p><div id="names"></div><div class="actions"><button id="addPlayer" class="primary">＋ Spieler hinzufügen</button></div></div><div class="panel"><label for="maxRounds" class="muted">Rundenanzahl</label><input id="maxRounds" type="number" min="1" max="20" value="10"><p class="muted">Die Änderungen werden automatisch auf diesem iPhone gespeichert.</p></div></main>
+<footer>RAGE Score · Spielstände bleiben in diesem Browser gespeichert</footer>
+
+<section id="rules" class="rules-wrap">
+ <details class="panel rules-panel">
+  <summary class="roundtitle">📖 RAGE-Spielregeln</summary>
+  <p class="muted">Die wichtigsten Regeln kompakt zum Nachschauen während des Spiels.</p>
+  <h3>1. Spielablauf</h3>
+  <ul>
+   <li>Spielt mit 3–8 Personen. Vor dem Start wählt ihr die Richtung: <strong>1 → 10</strong> oder <strong>10 → 1</strong>.</li>
+   <li>In jeder Runde sagt jeder Spieler voraus, wie viele Stiche er gewinnen wird.</li>
+   <li>Nach der Hinrunde könnt ihr entscheiden, ob ihr eine Rückrunde spielen möchtet. Die Rückrunde läuft in der entgegengesetzten Richtung.</li>
+  </ul>
+  <h3>2. Stiche gewinnen</h3>
+  <ul>
+   <li>Der erste Spieler spielt eine Karte aus. Wenn möglich, müssen die anderen Spieler die ausgespielte Farbe bedienen.</li>
+   <li>Wer die Farbe nicht hat, darf eine andere Farbe oder eine Aktionskarte spielen.</li>
+   <li>Ohne Trumpf gewinnt die höchste Karte der zuerst ausgespielten Farbe. Ist Trumpf im Stich, gewinnt die höchste Trumpfkarte.</li>
+   <li>Der Gewinner eines Stichs spielt den nächsten Stich aus.</li>
+  </ul>
+  <h3>3. Aktionskarten</h3>
+  <ul>
+   <li><strong>+5:</strong> Der Gewinner des Stichs mit dieser Karte erhält 5 Zusatzpunkte.</li>
+   <li><strong>−5:</strong> Der Gewinner des Stichs mit dieser Karte erhält 5 Minuspunkte.</li>
+   <li><strong>Ohne Trumpf:</strong> Die aktuelle Trumpffarbe wird für diesen Stich aufgehoben.</li>
+   <li><strong>Neue Trumpffarbe:</strong> Die Trumpffarbe wird gewechselt.</li>
+   <li><strong>Joker:</strong> Der Spieler bestimmt, welche Farbe der Joker im Stich hat. Er ist die höchste Karte dieser Farbe; Trumpf kann ihn überstechen.</li>
+  </ul>
+  <h3>4. Punkte zählen</h3>
+  <ul>
+   <li>Jeder gewonnene Stich zählt <strong>+1 Punkt</strong>. Bei einem Durchmarsch gibt es <strong>+2 Punkte pro Stich</strong>, außer in einer Runde mit nur einem Stich.</li>
+   <li>Bei genau richtiger Ansage gibt es <strong>+10 Punkte</strong>.</li>
+   <li>Bei falscher Ansage gibt es <strong>−5 Punkte</strong>.</li>
+   <li>Zusätzlich werden die Punkte für <strong>+5</strong>- und <strong>−5</strong>-Aktionskarten eingerechnet.</li>
+  </ul>
+  <p class="muted">Am Ende gewinnt der Spieler mit den meisten Gesamtpunkten. Diese Übersicht ist eine Kurzfassung der Spielregel; bei Sonderfällen gilt die Anleitung eures Spiels.</p>
+ </details>
+</section>
+
+<div id="appMessage" class="message-overlay hide" role="dialog" aria-modal="true" aria-labelledby="appMessageTitle"><div class="message-card"><div class="message-mark">✓</div><h2 class="message-title" id="appMessageTitle">Hinweis</h2><p class="message-text" id="appMessageText"></p><div class="message-actions"><button id="appMessageCancel" class="message-cancel hide" type="button">Abbrechen</button><button id="appMessageContinue" type="button">Weiter</button></div></div></div>
+<script>
+// Einheitliche RAGE-Meldungen und Bestätigungsdialoge
+let appMessageConfirmAction=null;
+function showAppMessage(message, confirmAction=null){
+ const overlay=document.getElementById('appMessage'); if(!overlay)return;
+ const text=String(message||''); document.getElementById('appMessageText').textContent=text;
+ const title=document.getElementById('appMessageTitle'), mark=overlay.querySelector('.message-mark');
+ if(/fehler|nicht|bitte|höchstens|fehlen|ungültig|konnte nicht/i.test(text)){title.textContent='Bitte prüfen';mark.textContent='!';}
+ else if(/abgeschlossen|beginnt|startet|abgegeben|wiederhergestellt|gesichert/i.test(text)){title.textContent='Alles klar!';mark.textContent='✓';}
+ else {title.textContent=confirmAction?'Bitte bestätigen':'Hinweis';mark.textContent=confirmAction?'?':'ℹ';}
+ appMessageConfirmAction=confirmAction;
+ document.getElementById('appMessageCancel').classList.toggle('hide',!confirmAction);
+ document.getElementById('appMessageContinue').textContent='Weiter';
+ overlay.classList.remove('hide'); document.getElementById('appMessageContinue').focus();
+}
+window.alert=function(message){showAppMessage(message)};
+function appConfirm(message,onConfirm){showAppMessage(message,onConfirm)}
+function closeAppMessage(runConfirm){const overlay=document.getElementById('appMessage');if(!overlay||overlay.classList.contains('hide'))return;const action=appMessageConfirmAction;overlay.classList.add('hide');appMessageConfirmAction=null;if(runConfirm&&action)action();}
+document.addEventListener('click',function(e){if(e.target&&e.target.id==='appMessageContinue')closeAppMessage(true);if(e.target&&e.target.id==='appMessageCancel')closeAppMessage(false)});
+document.addEventListener('keydown',function(e){const o=document.getElementById('appMessage');if(!o||o.classList.contains('hide'))return;if(e.key==='Escape'){closeAppMessage(false)}if(e.key==='Enter'){closeAppMessage(true)}});
+
+const KEY='rage-score-v1';
+const fresh=()=>({players:[{id:'p1',name:'Spieler 1'},{id:'p2',name:'Spieler 2'},{id:'p3',name:'Spieler 3'},{id:'p4',name:'Spieler 4'}],nextId:5,round:1,maxRounds:10,direction:'down',phase:0,setupPending:true,setupStep:'direction',returnPromptPending:false,gameFinished:false,bidsSubmitted:false,history:[],draft:[]});
+let state;
+try{state=JSON.parse(localStorage.getItem(KEY))||fresh(); 
+// Migrate saves made by the earlier version.
+if(state.players.length && typeof state.players[0]==='string'){
+ state.players=state.players.map((name,i)=>({id:'p'+(i+1),name}));
+ state.nextId=state.players.length+1;
+ state.history.forEach(h=>{h.playerIds=state.players.map(p=>p.id);h.names=[...state.players.map(p=>p.name)]});
+ }
+ state.players.forEach((p,i)=>{if(!p.id){p.id='p'+(i+1)}});
+ state.nextId=state.nextId||state.players.length+1;
+ state.direction=state.direction||'down';state.phase=Number.isInteger(state.phase)?state.phase:0;state.setupPending=!!state.setupPending;state.setupStep=state.setupStep||'direction';state.returnPromptPending=!!state.returnPromptPending;state.gameFinished=!!state.gameFinished;state.bidsSubmitted=!!state.bidsSubmitted;
+}catch(e){state=fresh()}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function ensureDraft(){while(state.draft.length<state.players.length)state.draft.push({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0});state.draft=state.draft.slice(0,state.players.length);state.draft.forEach(d=>{if(d.bidSet===undefined)d.bidSet=false;if(d.plusReceived===undefined)d.plusReceived=0;if(d.minusReceived===undefined)d.minusReceived=0})}
+function totals(){return state.players.map(p=>state.history.reduce((s,r)=>{let idx=(r.playerIds||[]).indexOf(p.id);return s+(idx>=0?(r.scores[idx]||0):0)},0))}
+function currentCardsThisRound(){const legDirection=state.phase===0?state.direction:(state.direction==='up'?'down':'up');return legDirection==='up'?state.round:state.maxRounds-state.round+1}
+function roundPoints(d,cards){const tricks=Number(d.tricks)||0;const sweepBonus=(cards>1&&tricks===cards)?tricks:0;const bidPoints=!d.bidSet?0:(Number(d.bid)===tricks?10:-5);const cardPoints=(Number(d.plusReceived)||0)*5-(Number(d.minusReceived)||0)*5;return tricks+sweepBonus+bidPoints+cardPoints}
+function pts(i){return roundPoints(state.draft[i],currentCardsThisRound())}
+function renderLiveScoreSheet(){
+ const head=document.getElementById('liveScoreHead'),body=document.getElementById('liveScoreBody'),foot=document.getElementById('liveScoreFoot');
+ if(!head||!body||!foot)return;
+ head.replaceChildren();body.replaceChildren();foot.replaceChildren();
+ const hr=el('tr');hr.append(el('th',{},'Runde'));
+ state.players.forEach(p=>hr.append(el('th',{},p.name||'Spieler')));
+ head.append(hr);
+ const totalByPlayer=state.players.map((p,i)=>state.history.reduce((sum,r)=>{const idx=(r.playerIds||[]).indexOf(p.id);return sum+(idx>=0?Number(r.scores[idx]||0):0)},0));
+ state.history.forEach((round,ri)=>{
+   const tr=el('tr');
+   const phaseName=round.phase===1?'Rück':'Hin';
+   tr.append(el('th',{},`${ri+1}. ${phaseName}`));
+   state.players.forEach((p,i)=>{
+     const idx=(round.playerIds||[]).indexOf(p.id);
+     const td=el('td');
+     if(idx>=0){
+       const tricks=round.tricks?.[idx] ?? round.draft?.[idx]?.tricks ?? '—';
+       const score=round.scores?.[idx] ?? '—';
+       td.append(el('div',{class:'tricks'},`${tricks} St.`),el('div',{class:'points'},`${score} P.`));
+     }else td.textContent='—';
+     tr.append(td);
+   });
+   body.append(tr);
+ });
+ if(!state.setupPending&&!state.returnPromptPending&&!state.gameFinished){
+   const tr=el('tr',{class:'current-round'});
+   tr.append(el('th',{},`${state.history.length+1}. Jetzt`));
+   state.players.forEach((p,i)=>{
+     const td=el('td');
+     const d=state.draft[i]||{tricks:0,bid:0,bidSet:false};
+     const score=pts(i);
+     td.append(el('div',{class:'tricks'},`${Number(d.tricks)||0} St.`),el('div',{class:'points'},`${score} P.`));
+     tr.append(td);
+   });
+   body.append(tr);
+ }
+ const fr=el('tr');fr.append(el('th',{},'Gesamt'));
+ state.players.forEach((p,i)=>{
+   let current=0;
+   if(!state.setupPending&&!state.returnPromptPending&&!state.gameFinished)current=pts(i);
+   fr.append(el('td',{},`${totalByPlayer[i]+current} P.`));
+ });
+ foot.append(fr);
+}
+
+function el(tag,attrs={},text=''){let n=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!=='')n.textContent=text;return n}
+function stepper(i,key,label,max=99){let wrap=el('div',{class:'field'});wrap.append(el('label',{},label));let row=el('div',{class:'stepper'});let minus=el('button',{},'−'),input=el('input',{type:'number',min:'0',max:String(max),inputmode:'numeric',value:key==='bid'&&!state.draft[i].bidSet?'':String(state.draft[i][key]),placeholder:key==='bid'?'?':'0'}),plus=el('button',{},'+');
+const locked=(key==='bid'&&state.bidsSubmitted)||(key==='tricks'&&!state.bidsSubmitted)||((key==='plusReceived'||key==='minusReceived')&&!state.bidsSubmitted);minus.disabled=locked;input.disabled=locked;plus.disabled=locked;const setVal=v=>{if(locked)return;state.draft[i][key]=v;if(key==='bid')state.draft[i].bidSet=true;save()};
+minus.onclick=()=>{if(key==='bid')state.draft[i].bidSet=true;setVal(Math.max(0,(+state.draft[i][key]||0)-1))};
+plus.onclick=()=>{if(key==='bid')state.draft[i].bidSet=true;setVal(Math.min(max,(+state.draft[i][key]||0)+1))};
+input.onchange=()=>{setVal(Math.max(0,Math.min(max,parseInt(input.value)||0)))};
+row.append(minus,input,plus);wrap.append(row);return wrap}
+function render(){ensureDraft();
+const legDirection=state.phase===0?state.direction:(state.direction==='up'?'down':'up');
+const cardsThisRound=legDirection==='up'?state.round:state.maxRounds-state.round+1;
+document.getElementById('roundLabel').textContent=`Runde ${state.history.length+1} · ${state.phase===0?'Hinrunde':'Rückrunde'}`;
+const enteredTricks=state.draft.reduce((sum,d)=>sum+(Number(d.tricks)||0),0);document.getElementById('trickTotal').textContent=enteredTricks;document.getElementById('trickTarget').textContent=cardsThisRound;document.getElementById('trickCheck').firstChild.textContent=state.bidsSubmitted?'Gewonnene Stiche eingetragen: ':'Ansagen abgegeben – danach Stiche eintragen: ';document.getElementById('trickCheck').classList.toggle('trick-ok',state.bidsSubmitted&&enteredTricks===cardsThisRound);document.getElementById('trickCheck').classList.toggle('hide',state.setupPending||state.returnPromptPending||state.gameFinished);
+document.getElementById('playerCount').textContent=state.players.length;
+document.getElementById('setupPanel').classList.toggle('hide',!state.setupPending||state.setupStep!=='direction');
+document.getElementById('setupPlayersPanel').classList.toggle('hide',!state.setupPending||state.setupStep!=='players');
+document.getElementById('returnPrompt').classList.toggle('hide',!state.returnPromptPending);
+document.getElementById('roundStatus').classList.toggle('hide',state.setupPending||state.returnPromptPending);
+document.getElementById('scoringHelp').classList.toggle('hide',state.setupPending||state.returnPromptPending);
+document.getElementById('newGame').classList.toggle('hide',state.setupPending||state.returnPromptPending);
+document.querySelector('nav').classList.toggle('hide',state.setupPending&&!state.returnPromptPending);
+if(state.setupPending){document.getElementById('game').classList.remove('hide');document.getElementById('ranking').classList.add('hide');document.getElementById('settings').classList.add('hide');document.getElementById('scoreSheet').classList.add('hide');}
+const blockRound=state.setupPending||state.returnPromptPending||state.gameFinished;
+document.getElementById('roundPlayers').classList.toggle('hide',blockRound);
+document.getElementById('roundOverview').classList.toggle('hide',blockRound);
+document.getElementById('finish').classList.toggle('hide',blockRound||!state.bidsSubmitted);document.getElementById('submitBids').classList.toggle('hide',blockRound||state.bidsSubmitted);
+document.getElementById('undo').classList.toggle('hide',blockRound);
+let area=document.getElementById('roundPlayers');area.replaceChildren();
+state.players.forEach((player,i)=>{let name=player.name;let p=el('section',{class:'panel'});let top=el('div',{class:'row between'});top.append(el('div',{class:'name'},name||`Spieler ${i+1}`));if(state.bidsSubmitted)top.append(el('div',{class:'score'},`${pts(i)} P.`));p.append(top);let fields=el('div',{class:'fields'});if(!state.bidsSubmitted){fields.style.gridTemplateColumns='1fr';fields.append(stepper(i,'bid','Ansage abgeben',cardsThisRound));}else{fields.append(stepper(i,'bid','Ansage (verbindlich abgegeben)',cardsThisRound),stepper(i,'tricks','Anzahl der gewonnenen Stiche',cardsThisRound),stepper(i,'plusReceived','+5 bekommen',20),stepper(i,'minusReceived','−5 bekommen',20));}p.append(fields);if(state.bidsSubmitted){const yes=el('button',{class:'yes-bid'},`✓ Ja – Ansage stimmt (${state.draft[i].bid} Stiche)`);yes.onclick=()=>{state.draft[i].tricks=Number(state.draft[i].bid)||0;save();};p.append(yes);let note=el('div',{class:'muted'},state.draft[i].bid===state.draft[i].tricks?`Richtig: ${state.draft[i].tricks} Stiche + 10${cardsThisRound>1&&state.draft[i].tricks===cardsThisRound?' · Durchmarsch-Bonus':''} = ${pts(i)} Punkte`: `Falsch: ${state.draft[i].tricks} Stiche − 5${cardsThisRound>1&&state.draft[i].tricks===cardsThisRound?' · Durchmarsch-Bonus':''} = ${pts(i)} Punkte`);note.style.marginTop='10px';p.append(note);}area.append(p)});
+let overview=document.getElementById('roundOverviewRows');overview.replaceChildren();
+state.players.forEach((player,i)=>{
+ let row=el('div',{class:'row between player'});
+ let left=el('span',{class:'name'},player.name||`Spieler ${i+1}`);
+ let detail=el('span',{class:'muted'},state.draft[i].bidSet?`Abgegebene Ansage: ${state.draft[i].bid}`:'Ansage noch offen');
+ row.append(left,detail);overview.append(row);
+});
+renderLiveScoreSheet();
+document.getElementById('maxRounds').value=state.maxRounds;
+
+document.getElementById('setupPlayerCount').value=String(state.players.length);
+const setupNames=document.getElementById('setupPlayerNames');setupNames.replaceChildren();
+state.players.forEach((player,i)=>{const wrap=el('div',{class:'player'});const label=el('label',{class:'muted'},`Spieler ${i+1}`);const isDefault=!player.name||player.name===`Spieler ${i+1}`;const input=el('input',{value:isDefault?'':player.name,placeholder:`Name von Spieler ${i+1}`});input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;save()};wrap.append(label,input);setupNames.append(wrap)});
+let names=document.getElementById('names');names.replaceChildren();state.players.forEach((player,i)=>{let r=el('div',{class:'row player'});let input=el('input',{value:player.name,placeholder:`Spieler ${i+1}`});input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;save()};let del=el('button',{class:'small'},'✕');del.disabled=state.players.length<=3;del.onclick=()=>{if(state.players.length<=3)return;const removed=state.players.splice(i,1)[0];state.draft.splice(i,1);state.history.forEach(h=>{const idx=(h.playerIds||[]).indexOf(removed.id);if(idx>=0){h.playerIds.splice(idx,1);h.scores.splice(idx,1);if(h.names)h.names.splice(idx,1)}});save()};r.append(input,del);names.append(r)});
+const statsEl=document.getElementById('cardStats'),statsRows=document.getElementById('cardStatsRows');statsRows.replaceChildren();statsEl.classList.toggle('hide',!state.gameFinished);if(state.gameFinished){const sums=state.players.map(p=>({id:p.id,name:p.name,plusReceived:0,minusReceived:0}));state.history.forEach(h=>{(h.playerIds||[]).forEach((id,ix)=>{const target=sums.find(x=>x.id===id),d=(h.draft||[])[ix];if(target&&d){target.plusReceived+=Number(d.plusReceived)||0;target.minusReceived+=Number(d.minusReceived)||0}})});const table=el('table',{style:'width:100%;border-collapse:collapse'});const thead=el('thead');const hr=el('tr');['Spieler','+5 bekommen','−5 bekommen'].forEach(t=>hr.append(el('th',{style:'padding:8px;text-align:left;border-bottom:1px solid #ffffff55'},t)));thead.append(hr);table.append(thead);const tbody=el('tbody');sums.forEach(x=>{const tr=el('tr');tr.append(el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},x.name),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.plusReceived)),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.minusReceived)));tbody.append(tr)});table.append(tbody);statsRows.append(table);[['minusReceived','−5-Karten bekommen'],['plusReceived','+5-Karten bekommen']].forEach(([key,label])=>{const max=Math.max(0,...sums.map(x=>x[key]));const winners=sums.filter(x=>x[key]===max&&max>0);const row=el('div',{class:'historyrow'});row.append(el('strong',{},label+' – Spitzenreiter'),el('span',{},max===0?'Noch keine Angaben':winners.map(x=>x.name).join(', ')),el('strong',{},String(max)));statsRows.append(row)})}let ranked=state.players.map((p,i)=>({name:p.name,score:totals()[i],i})).sort((a,b)=>b.score-a.score);let rl=document.getElementById('rankList');rl.replaceChildren();ranked.forEach((p,i)=>{let r=el('div',{class:'row between player'});let left=el('div',{class:'row'});left.append(el('span',{class:'rank'},['🥇','🥈','🥉'][i]||`${i+1}.`),el('span',{class:'name'},p.name));r.append(left,el('span',{class:'score'},`${p.score} P.`));rl.append(r)});
+let hist=document.getElementById('sheetHistory');hist.replaceChildren();if(!state.history.length)hist.append(el('p',{class:'muted'},'Noch keine Runden abgeschlossen.'));state.history.forEach(h=>{let r=el('div',{class:'historyrow'});r.append(el('strong',{},`R${(h.phase||0)*state.maxRounds+h.round} · ${h.cards||''}K`),el('span',{},`${h.scores.map((s,i)=>`${(h.names&&h.names[i])||state.players.find(p=>p.id===(h.playerIds||[])[i])?.name||'Spieler'}: ${s} P.`).join(' · ')}${h.tricks?' | Stiche: '+h.tricks.map((t,i)=>`${(h.names&&h.names[i])||'Spieler'} ${t}`).join(', '):''}`),el('strong',{},`${h.scores.reduce((a,b)=>a+b,0)} P.`));hist.append(r)});
+document.getElementById('undo').disabled=!state.history.length;document.getElementById('finish').textContent=state.round>=state.maxRounds?'Spiel abschließen 🏆':'Runde abschließen →';}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['game','ranking','settings','scoreSheet'].forEach(id=>document.getElementById(id).classList.toggle('hide',id!==b.dataset.tab))});
+document.getElementById('submitBids').onclick=()=>{const err=document.getElementById('err');err.textContent='';if(state.draft.some(d=>!d.bidSet)){err.textContent='Bitte für jeden Spieler zuerst eine Ansage eintragen (auch 0 ist gültig).';return}const cards=currentCardsThisRound();if(state.draft.some(d=>Number(d.bid)>cards)){err.textContent=`In dieser Runde sind höchstens ${cards} Stiche als Ansage möglich.`;return}state.bidsSubmitted=true;state.draft.forEach(d=>d.tricks=0);save();alert('Ansagen wurden verbindlich abgegeben. Jetzt könnt ihr die gewonnenen Stiche und erhaltenen Sonderkarten eintragen.');window.scrollTo({top:0,behavior:'smooth'});};
+document.getElementById('finish').onclick=()=>{let err=document.getElementById('err');err.textContent='';if(!state.bidsSubmitted){err.textContent='Bitte zuerst die Ansagen verbindlich abgeben.';return}if(state.draft.some(d=>!d.bidSet)){err.textContent='Bitte für jeden Spieler zuerst die Ansage eintragen (auch 0 ist eine gültige Ansage).';return}const legDirection=state.phase===0?state.direction:(state.direction==='up'?'down':'up');const cardsThisRound=legDirection==='up'?state.round:state.maxRounds-state.round+1;const totalTricks=state.draft.reduce((sum,d)=>sum+(Number(d.tricks)||0),0);if(state.draft.some(d=>Number(d.bid)>cardsThisRound||Number(d.tricks)>cardsThisRound)){err.textContent=`In dieser Runde sind höchstens ${cardsThisRound} Stiche pro Spieler möglich.`;return}if(totalTricks!==cardsThisRound){const difference=cardsThisRound-totalTricks;err.textContent=difference>0?`Noch nicht abschließbar: Insgesamt müssen genau ${cardsThisRound} Stiche verteilt sein. Eingetragen sind ${totalTricks}; es fehlen noch ${difference}.`:`Noch nicht abschließbar: Insgesamt dürfen es genau ${cardsThisRound} Stiche sein. Eingetragen sind ${totalTricks}; bitte ${Math.abs(difference)} Stich(e) abziehen.`;return}state.history.push({round:state.round,phase:state.phase,cards:cardsThisRound,scores:state.players.map((_,i)=>pts(i)),tricks:state.draft.map(d=>Number(d.tricks)||0),playerIds:state.players.map(p=>p.id),names:state.players.map(p=>p.name),draft:JSON.parse(JSON.stringify(state.draft))});if(state.round<state.maxRounds){state.round++;state.bidsSubmitted=false;state.draft=state.players.map(()=>({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0}))}else if(state.phase===0){state.returnPromptPending=true}else{state.gameFinished=true;document.querySelector('[data-tab="ranking"]').click()}save();if(state.gameFinished){alert('Spiel abgeschlossen! Die Endstatistik und Rangliste sind geöffnet.');}else if(state.returnPromptPending){alert('Die Hinrunde wurde abgeschlossen. Entscheidet jetzt, ob ihr eine Rückrunde spielen möchtet.');}else{alert('Stiche wurden abgegeben. Die nächste Runde startet jetzt.');}window.scrollTo({top:0,behavior:'smooth'});};
+function undoLastRound(){if(!state.history.length){alert('Es gibt noch keine abgeschlossene Runde.');return}const last=state.history[state.history.length-1];const label=`Runde ${last.round||state.round}${Number(last.phase)===1?' (Rückrunde)':' (Hinrunde)'}`;appConfirm(`${label} zur Bearbeitung wieder öffnen? Die vorherigen Runden und Punkte bleiben erhalten. Die Ansagen bleiben gesperrt; gewonnene Stiche und Sonderkarten kannst du korrigieren.`,()=>{const h=state.history.pop();state.round=h.round;state.phase=Number.isInteger(h.phase)?h.phase:0;state.bidsSubmitted=true;state.returnPromptPending=false;state.gameFinished=false;state.draft=JSON.parse(JSON.stringify(h.draft||state.players.map(()=>({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0}))));state.draft.forEach(d=>{d.bidSet=true});document.getElementById('err').textContent='Letzte Runde wieder geöffnet. Ansagen sind gesperrt; Stiche und Sonderkarten können korrigiert werden.';document.querySelector('[data-tab="game"]').click();save()})}
+document.getElementById('undo').onclick=undoLastRound;
+document.getElementById('undoFromRanking').onclick=undoLastRound;
+document.getElementById('newGame').onclick=()=>appConfirm('Neues Spiel starten? Der bisherige Verlauf wird gelöscht.',()=>{state.setupPending=true;state.setupStep='direction';state.returnPromptPending=false;state.gameFinished=false;save()});
+function chooseDirection(direction){state.direction=direction;state.setupStep='players';state.setupPending=true;save()}
+function beginGame(){state.maxRounds=10;state.phase=0;state.returnPromptPending=false;state.gameFinished=false;state.round=1;state.history=[];state.draft=state.players.map(()=>({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0}));state.setupPending=false;state.bidsSubmitted=false;state.setupStep='direction';save();alert('Das Spiel beginnt! Tragt jetzt die Ansagen für die erste Runde ein.');window.scrollTo({top:0,behavior:'smooth'});}
+document.getElementById('startUp').onclick=()=>chooseDirection('up');
+document.getElementById('startDown').onclick=()=>chooseDirection('down');
+document.getElementById('backToDirection').onclick=()=>{state.setupStep='direction';save()};
+document.getElementById('beginGameButton').onclick=()=>beginGame();
+document.getElementById('setupPlayerCount').onchange=e=>{const count=Math.max(3,Math.min(8,parseInt(e.target.value)||4));while(state.players.length<count){state.players.push({id:'p'+state.nextId++,name:`Spieler ${state.players.length+1}`});state.draft.push({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0})}while(state.players.length>count){state.players.pop();state.draft.pop()}save()};
+document.getElementById('playReturn').onclick=()=>{state.phase=1;state.round=1;state.returnPromptPending=false;state.bidsSubmitted=false;state.draft=state.players.map(()=>({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0}));save()};
+document.getElementById('finishAfterOut').onclick=()=>{state.returnPromptPending=false;state.gameFinished=true;document.querySelector('[data-tab="ranking"]').click();save()};
+document.getElementById('addPlayer').onclick=()=>{if(state.players.length>=8){alert('Maximal 8 Spieler.');return}state.players.push({id:'p'+state.nextId++,name:`Spieler ${state.players.length+1}`});state.draft.push({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0});save()};
+document.getElementById('maxRounds').onchange=e=>{state.maxRounds=Math.max(1,Math.min(20,parseInt(e.target.value)||10));state.round=Math.min(state.round,state.maxRounds);save()};
+document.getElementById('exportBackup').onclick=()=>{const blob=new Blob([JSON.stringify({format:'rage-score-backup-v1',exportedAt:new Date().toISOString(),state},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='rage-spielstand-sicherung.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+document.getElementById('importBackupButton').onclick=()=>document.getElementById('importBackup').click();
+document.getElementById('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());const restored=parsed.state||parsed;if(!Array.isArray(restored.players)||!Array.isArray(restored.history))throw new Error('Ungültige Sicherungsdatei');appConfirm('Den aktuellen Spielstand durch die Sicherungsdatei ersetzen?',()=>{state=restored;save();alert('Spielstand wurde wiederhergestellt.')});return}catch(err){alert('Die Datei konnte nicht gelesen werden. Bitte wähle eine RAGE-Sicherung im JSON-Format.')}finally{e.target.value=''}};
+// Recalculate saved round scores from round data, including received special cards.
+state.history.forEach(h=>{if(Array.isArray(h.draft)&&Array.isArray(h.scores)){h.scores=h.draft.map((d,i)=>roundPoints(d,Number(h.cards)||1))}});
+render();
+</script></body></html>
