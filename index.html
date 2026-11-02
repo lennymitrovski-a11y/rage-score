@@ -89,6 +89,63 @@ button{touch-action:manipulation}
 .turn-pill{display:inline-block;border:1px solid #fff0db;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:850;margin:4px 5px 4px 0;background:rgba(2,44,84,.45)}
 .turn-actions{display:flex;gap:8px;margin-top:12px}.turn-actions button{flex:1}
 
+
+/* Persönliche Anzeige-Einstellungen */
+nav{flex-wrap:wrap}
+.setting-toggle{display:flex;align-items:center;gap:10px;margin:15px 0 4px;font-weight:750}
+.setting-toggle input{width:22px;height:22px;min-width:22px;margin:0;accent-color:#e5262f}
+html{--app-font-scale:1}
+body{font-size:calc(16px * var(--app-font-scale))}
+body button,body input,body select,body textarea{font-size:calc(16px * var(--app-font-scale))}
+body .tab{font-size:calc(14px * var(--app-font-scale))}
+body .roundtitle{font-size:calc(20px * var(--app-font-scale))!important}
+body .muted{font-size:calc(13px * var(--app-font-scale))!important}
+body p{font-size:calc(16px * var(--app-font-scale))}
+body label{font-size:calc(14px * var(--app-font-scale))}
+body .name{font-size:calc(17px * var(--app-font-scale))!important}
+body .score{font-size:calc(21px * var(--app-font-scale))!important}
+body .bid-choice{font-size:calc(18px * var(--app-font-scale))}
+body .turn-pill{font-size:calc(13px * var(--app-font-scale))}
+body .field label{font-size:calc(12px * var(--app-font-scale))}
+body.high-contrast{--line:#fff;--cream:#fff}
+body.high-contrast .panel{background:linear-gradient(145deg,#07518e,#022f5d);border-color:#fff}
+body.high-contrast .muted,body.high-contrast p,body.high-contrast label{color:#fff!important}
+body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+@media(max-width:560px){nav .tab{flex:1 1 calc(50% - 8px);padding:10px 7px;font-size:13px}}
+
+
+/* RAGE Score – mobile-first redesign */
+body{padding:calc(env(safe-area-inset-top) + 6px) 12px calc(92px + env(safe-area-inset-bottom));max-width:650px}
+header{padding:7px 0 5px}
+header .logo{padding:2px 5px;border-radius:9px}
+header .logo img{width:70px;height:36px}
+h1{font-size:clamp(27px,7vw,38px);margin:5px 0 0}
+header p{font-size:13px;margin:1px 0 0}
+nav{position:fixed;z-index:500;left:0;right:0;bottom:0;margin:0 auto;width:100%;max-width:650px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(2,35,69,.96);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.25);gap:6px;box-shadow:0 -5px 20px rgba(0,0,0,.2)}
+nav .tab{flex:1;min-width:0;padding:9px 3px;font-size:12px;line-height:1.2;border-radius:11px;box-shadow:none}
+.panel{padding:12px;margin:10px 0;border-radius:13px;box-shadow:2px 3px 0 rgba(2,24,49,.35)}
+.roundtitle{font-size:18px}
+#roundPlayers .player-turn{margin:10px 0;padding:13px}
+#roundPlayers .player-turn .name{font-size:22px!important}
+#scoringHelp{font-size:12px!important;margin:8px 2px}
+#roundOverview{padding:10px}
+#roundOverviewRows .player{padding:7px 0}
+.bid-choice-grid{gap:7px}
+.bid-choice{min-height:46px;border-radius:12px;padding:7px 2px}
+.turn-actions{display:flex;gap:8px;margin-top:12px}
+.turn-actions button{flex:1;min-height:52px}
+.player-turn .fields{margin-top:10px}
+.player-turn .yes-bid{min-height:48px}
+#rankList .player{padding:10px 4px}
+#rankList .score{font-size:19px}
+#scoreSheet .panel{padding:10px}
+footer{padding-bottom:12px;font-size:12px}
+@media(min-width:560px){nav .tab{font-size:14px;padding:11px}}
+
+
+@supports(padding:max(0px)){body{padding-bottom:max(92px,calc(82px + env(safe-area-inset-bottom)))}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffe58a;outline-offset:2px}
+
 </style>
 <style>.message-actions{display:flex;gap:12px;justify-content:center;margin-top:18px}.message-actions button{flex:1}.message-cancel{background:#0b4f86!important;color:#fff!important;border:2px solid #fff!important}.message-cancel.hide{display:none!important}</style>
 
@@ -104,7 +161,7 @@ button{touch-action:manipulation}
 </head>
 <body>
 <header><div class="logo"><img src="amigo-logo.png" alt="AMIGO"></div><h1>RAGE SCORE</h1><p>Der kultige Stich-Punktezähler</p></header>
-<nav><button class="tab active" data-tab="game">Spiel</button><button class="tab" data-tab="scoreSheet">Spielzettel</button><button class="tab" data-tab="ranking">Rangliste</button></nav>
+<nav><button class="tab active" data-tab="game">Spiel</button><button class="tab" data-tab="scoreSheet">📋 Zettel</button><button class="tab" data-tab="ranking">🏆 Rangliste</button><button class="tab" data-tab="settings">⚙️ Mehr</button></nav>
 <main id="game">
  <div id="setupPanel" class="panel hide">
    <div class="roundtitle">🎴 1. Spielrichtung wählen</div>
@@ -151,7 +208,12 @@ button{touch-action:manipulation}
    <div class="roundtitle">Ansage- und Stichübersicht dieser Runde</div>
    <div id="roundOrderInfo" class="muted" style="margin:8px 0 10px"></div><div id="bidTotal" class="trick-check" style="margin:8px 0"></div><div id="roundOverviewRows"></div>
  </div>
- <div id="roundPlayers"></div>
+ <div id="mobileRoundSummary" class="panel" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center">
+ <div><strong id="mobileRoundNo">1</strong><div class="muted">Runde</div></div>
+ <div><strong id="mobileCardNo">1</strong><div class="muted">Karten</div></div>
+ <div><strong id="mobilePlayerNo">4</strong><div class="muted">Spieler</div></div>
+</div>
+<div id="roundPlayers"></div>
  <p class="muted" id="scoringHelp">Punkte: 1 pro Stich, bei Durchmarsch 2 pro Stich (außer bei nur 1 Stich), +10 bei richtiger Ansage oder −5 bei falscher Ansage. Sonderkarten: +5/−5 je Karte.</p>
  <div id="trickCheck" class="trick-check muted">Stiche eingetragen: <strong id="trickTotal">0</strong> / <strong id="trickTarget">0</strong></div><div id="err" class="warning"></div>
  <button class="primary" id="submitBids">Ansagen verbindlich abgeben →</button><button class="primary hide" id="finish">Runde abschließen →</button>
@@ -173,7 +235,28 @@ button{touch-action:manipulation}
   <div id="sheetHistory"></div>
  </div>
 </main>
-<main id="settings" class="hide"><div class="panel"><div class="roundtitle">Mitspieler</div><p class="muted">Namen ändern oder Spieler hinzufügen/entfernen.</p><div id="names"></div><div class="actions"><button id="addPlayer" class="primary">＋ Spieler hinzufügen</button></div></div><div class="panel"><label for="maxRounds" class="muted">Rundenanzahl</label><input id="maxRounds" type="number" min="1" max="20" value="10"><p class="muted">Die Änderungen werden automatisch auf diesem iPhone gespeichert.</p></div></main>
+<main id="settings" class="hide">
+ <div class="panel">
+  <div class="roundtitle">👁️ Darstellung & Bedienung</div>
+  <label for="fontSizeSetting" class="muted" style="display:block;margin:10px 0 6px">Schriftgröße</label>
+  <select id="fontSizeSetting" style="width:100%;padding:12px;border:2px solid #fff0db;border-radius:9px;background:#033e76;color:#fff;font:inherit">
+   <option value="0.9">Klein</option>
+   <option value="1" selected>Standard</option>
+   <option value="1.15">Groß</option>
+   <option value="1.3">Sehr groß</option>
+  </select>
+  <label class="setting-toggle"><input id="highContrastSetting" type="checkbox"> Höherer Kontrast</label>
+  <p class="muted">Macht Texte und Flächen deutlicher unterscheidbar.</p>
+  <label class="setting-toggle"><input id="reduceMotionSetting" type="checkbox"> Animationen reduzieren</label>
+  <p class="muted">Reduziert Übergänge und Bewegungen in der App.</p>
+  <p class="muted" id="settingsSavedMessage">Diese Anzeige-Einstellungen werden automatisch auf diesem Gerät gespeichert.</p>
+ </div>
+ <div class="panel">
+  <div class="roundtitle">💾 Spielstand</div>
+  <p class="muted">Sichere deinen Spielstand oder stelle eine vorhandene Sicherung wieder her.</p>
+  <button id="openBackupTab" class="small">Spielstand sichern / wiederherstellen →</button>
+ </div>
+ <div class="panel"><div class="roundtitle">Mitspieler</div><p class="muted">Namen ändern oder Spieler hinzufügen/entfernen.</p><div id="names"></div><div class="actions"><button id="addPlayer" class="primary">＋ Spieler hinzufügen</button></div></div><div class="panel"><label for="maxRounds" class="muted">Rundenanzahl</label><input id="maxRounds" type="number" min="1" max="20" value="10"><p class="muted">Die Änderungen werden automatisch auf diesem iPhone gespeichert.</p></div></main>
 <footer>RAGE Score · Spielstände bleiben in diesem Browser gespeichert</footer>
 
 <section id="rules" class="rules-wrap">
@@ -234,6 +317,26 @@ function closeAppMessage(runConfirm){const overlay=document.getElementById('appM
 document.addEventListener('click',function(e){if(e.target&&e.target.id==='appMessageContinue')closeAppMessage(true);if(e.target&&e.target.id==='appMessageCancel')closeAppMessage(false)});
 document.addEventListener('keydown',function(e){const o=document.getElementById('appMessage');if(!o||o.classList.contains('hide'))return;if(e.key==='Escape'){closeAppMessage(false)}if(e.key==='Enter'){closeAppMessage(true)}});
 
+
+const UI_PREFS_KEY='rage-score-ui-settings-v1';
+let uiPrefs={fontScale:'1',highContrast:false,reduceMotion:false,compactMode:true};
+try{const savedPrefs=JSON.parse(localStorage.getItem(UI_PREFS_KEY)||'{}');uiPrefs={...uiPrefs,...savedPrefs}}catch(e){}
+function saveUiPrefs(){
+ localStorage.setItem(UI_PREFS_KEY,JSON.stringify(uiPrefs));
+ applyUiPrefs();
+}
+function applyUiPrefs(){
+ document.documentElement.style.setProperty('--app-font-scale',uiPrefs.fontScale||'1');
+ document.body.classList.toggle('high-contrast',!!uiPrefs.highContrast);
+ document.body.classList.toggle('reduce-motion',!!uiPrefs.reduceMotion);
+ const font=document.getElementById('fontSizeSetting');
+ const contrast=document.getElementById('highContrastSetting');
+ const motion=document.getElementById('reduceMotionSetting');
+ if(font)font.value=uiPrefs.fontScale||'1';
+ if(contrast)contrast.checked=!!uiPrefs.highContrast;
+ if(motion)motion.checked=!!uiPrefs.reduceMotion;
+}
+
 const KEY='rage-score-v1';
 const fresh=()=>({players:[{id:'p1',name:'Spieler 1'},{id:'p2',name:'Spieler 2'},{id:'p3',name:'Spieler 3'},{id:'p4',name:'Spieler 4'}],nextId:5,round:1,maxRounds:10,direction:'down',phase:0,setupPending:true,setupStep:'direction',returnPromptPending:false,gameFinished:false,bidsSubmitted:false,dealerStartId:'p1',bidStartId:'p2',bidCursor:0,history:[],draft:[]});
 let state;
@@ -246,7 +349,7 @@ if(state.players.length && typeof state.players[0]==='string'){
  }
  state.players.forEach((p,i)=>{if(!p.id){p.id='p'+(i+1)}});
  state.nextId=state.nextId||state.players.length+1;
- state.direction=state.direction||'down';state.phase=Number.isInteger(state.phase)?state.phase:0;state.setupPending=!!state.setupPending;state.setupStep=state.setupStep||'direction';state.returnPromptPending=!!state.returnPromptPending;state.gameFinished=!!state.gameFinished;state.bidsSubmitted=!!state.bidsSubmitted;state.dealerStartId=state.dealerStartId||state.players[0]?.id||'p1';state.bidStartId=state.bidStartId||state.players[1]?.id||state.players[0]?.id||'p1';state.bidCursor=Math.max(0,Number(state.bidCursor)||0);state.autoAdvancing=false;
+ state.direction=state.direction||'down';state.phase=Number.isInteger(state.phase)?state.phase:0;state.setupPending=!!state.setupPending;state.setupStep=state.setupStep||'direction';state.returnPromptPending=!!state.returnPromptPending;state.gameFinished=!!state.gameFinished;state.bidsSubmitted=!!state.bidsSubmitted;state.dealerStartId=state.dealerStartId||state.players[0]?.id||'p1';state.bidStartId=state.bidStartId||state.players[1]?.id||state.players[0]?.id||'p1';state.bidCursor=Math.max(0,Number(state.bidCursor)||0);state.scoreCursor=Math.max(0,Number(state.scoreCursor)||0);state.autoAdvancing=false;
 }catch(e){state=fresh()}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
 function ensureDraft(){while(state.draft.length<state.players.length)state.draft.push({bid:0,bidSet:false,tricks:0,plus:0,minus:0,plusReceived:0,minusReceived:0});state.draft=state.draft.slice(0,state.players.length);state.draft.forEach(d=>{if(d.bidSet===undefined)d.bidSet=false;if(d.plusReceived===undefined)d.plusReceived=0;if(d.minusReceived===undefined)d.minusReceived=0})}
@@ -364,6 +467,10 @@ function render(){ensureDraft();state.bidCursor=Math.min(Math.max(0,Number(state
 const legDirection=state.phase===0?state.direction:(state.direction==='up'?'down':'up');
 const cardsThisRound=legDirection==='up'?state.round:state.maxRounds-state.round+1;
 document.getElementById('roundLabel').textContent=`Runde ${state.round} · ${state.phase===0?'Hinrunde':'Rückrunde'}`;
+const mobileRound=document.getElementById('mobileRoundNo');if(mobileRound)mobileRound.textContent=state.round;
+const mobileCards=document.getElementById('mobileCardNo');if(mobileCards)mobileCards.textContent=cardsThisRound;
+const mobilePlayers=document.getElementById('mobilePlayerNo');if(mobilePlayers)mobilePlayers.textContent=state.players.length;
+
 const enteredTricks=state.draft.reduce((sum,d)=>sum+(Number(d.tricks)||0),0);document.getElementById('trickTotal').textContent=enteredTricks;document.getElementById('trickTarget').textContent=cardsThisRound;document.getElementById('trickCheck').firstChild.textContent=state.bidsSubmitted?'Gewonnene Stiche: ':'Ansagen abgegeben – danach Stiche eintragen: ';document.getElementById('trickCheck').classList.toggle('trick-ok',state.bidsSubmitted&&enteredTricks===cardsThisRound);document.getElementById('trickCheck').classList.add('hide');
 document.getElementById('playerCount').textContent=state.players.length;
 document.getElementById('roundOrderInfo').textContent=`Kartengeber: ${state.players[dealerIndex()]?.name||'—'} · Ansage-Reihenfolge: ${roundOrderNames()}`;
@@ -402,24 +509,48 @@ if(!state.bidsSubmitted){
  const actions=el('div',{class:'turn-actions'});
  if((state.bidCursor||0)>0){const prev=el('button',{},'← Zurück');prev.onclick=()=>{const keepY=window.scrollY;state.bidCursor--;save();requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:'auto'})))};actions.append(prev)}
  const next=el('button',{class:'primary'},(state.bidCursor||0)===state.players.length-1?'Ansagen abgeben → Stiche eintragen':'Ansage bestätigen → nächster Spieler');
- next.onclick=()=>{const d=state.draft[idx];d.bidSet=true;if(Number(d.bid)>cardsThisRound){document.getElementById('err').textContent=`Höchstens ${cardsThisRound} Stiche sind in dieser Runde möglich.`;return;}if((state.bidCursor||0)<state.players.length-1){const keepY=window.scrollY;state.bidCursor=(state.bidCursor||0)+1;save();requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:'auto'})));return;}if(state.draft.some(x=>!x.bidSet)){document.getElementById('err').textContent='Bitte jede Ansage bestätigen.';return;}state.bidsSubmitted=true;state.draft.forEach(x=>x.tricks=0);state.bidCursor=0;save();document.getElementById('err').textContent='Alle Ansagen sind verbindlich. Tragt jetzt zuerst die Sonderkarten und danach die gewonnenen Stiche ein.';document.getElementById('err').style.color='#fff2c4';window.scrollTo({top:0,behavior:'smooth'});};
+ next.onclick=()=>{const d=state.draft[idx];d.bidSet=true;if(Number(d.bid)>cardsThisRound){document.getElementById('err').textContent=`Höchstens ${cardsThisRound} Stiche sind in dieser Runde möglich.`;return;}if((state.bidCursor||0)<state.players.length-1){const keepY=window.scrollY;state.bidCursor=(state.bidCursor||0)+1;save();requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:'auto'})));return;}if(state.draft.some(x=>!x.bidSet)){document.getElementById('err').textContent='Bitte jede Ansage bestätigen.';return;}state.bidsSubmitted=true;state.draft.forEach(x=>x.tricks=0);state.bidCursor=0;state.scoreCursor=0;save();document.getElementById('err').textContent='Alle Ansagen sind verbindlich. Tragt jetzt zuerst die Sonderkarten und danach die gewonnenen Stiche ein.';document.getElementById('err').style.color='#fff2c4';window.scrollTo({top:0,behavior:'smooth'});};
  actions.append(next);card.append(actions);
  card.append(el('p',{class:'muted',style:'margin-top:12px'},`Nächste Ansagen: ${order.map(i=>state.players[i].name).join(' → ')}`));area.append(card);
 }else{
- area.append(el('p',{class:'muted'},`Ansagen sind abgegeben. Tragt zuerst die erhaltenen +5/−5-Karten ein und ergänzt zuletzt die gewonnenen Stiche. Sobald die Summe genau ${cardsThisRound} beträgt, geht es automatisch zur nächsten Runde.`));
- bidOrderIndexes().forEach(i=>{const player=state.players[i];let p=el('section',{class:'panel player-turn'});let top=el('div',{class:'row between'});top.append(el('div',{class:'name'},player.name||`Spieler ${i+1}`),el('div',{class:'score'},`${pts(i)} P.`));p.append(top);p.append(el('span',{class:'turn-pill'},`Ansage: ${state.draft[i].bid} Stiche`));let fields=el('div',{class:'fields'});fields.append(stepper(i,'plusReceived','+5 bekommen',20),stepper(i,'minusReceived','−5 bekommen',20));let tricksField=el('div',{class:'field bid-choice-wrap'});tricksField.style.gridColumn='1 / -1';
- fields.append(tricksField);
+ const order=bidOrderIndexes();
+ if(!Number.isInteger(state.scoreCursor))state.scoreCursor=0;
+ state.scoreCursor=Math.min(Math.max(0,state.scoreCursor),order.length-1);
+ const idx=order[state.scoreCursor],player=state.players[idx],d=state.draft[idx];
+ const entered=state.draft.reduce((sum,x)=>sum+(Number(x.tricks)||0),0);
+ area.append(el('p',{class:'muted'},`Tragt die Sonderkarten und gewonnenen Stiche nacheinander in der Ansagereihenfolge ein. Gesamt: ${entered} / ${cardsThisRound} Stiche.`));
+ let p=el('section',{class:'panel player-turn'});
+ p.append(el('div',{class:'roundtitle'},`🎯 Stichwertung · Spieler ${state.scoreCursor+1} von ${state.players.length}`));
+ let top=el('div',{class:'row between'});
+ top.append(el('div',{class:'name'},player.name||`Spieler ${idx+1}`),el('div',{class:'score'},`${pts(idx)} P.`));
+ p.append(top,el('span',{class:'turn-pill'},`Ansage: ${d.bid} Stiche`));
+ let fields=el('div',{class:'fields'});
+ fields.append(stepper(idx,'plusReceived','+5 bekommen',20),stepper(idx,'minusReceived','−5 bekommen',20));
+ let tricksField=el('div',{class:'field bid-choice-wrap'});tricksField.style.gridColumn='1 / -1';
  tricksField.append(el('label',{class:'bid-choice-label'},'Anzahl der gewonnenen Stiche'));
  let tricksGrid=el('div',{class:'bid-choice-grid'});
  for(let n=0;n<=cardsThisRound;n++){
-  const choice=el('button',{type:'button',class:'bid-choice'+(Number(state.draft[i].tricks)===n?' selected':'')},String(n));
+  const choice=el('button',{type:'button',class:'bid-choice'+(Number(d.tricks)===n?' selected':'')},String(n));
   choice.setAttribute('aria-label',`${n} gewonnene Stiche`);
-  const locked=!state.bidsSubmitted;
-  choice.disabled=locked;
-  choice.onclick=()=>{if(locked)return;state.draft[i].tricks=n;save();maybeAutoAdvanceRound()};
+  choice.onclick=()=>{d.tricks=n;save()};
   tricksGrid.append(choice);
  }
- tricksField.append(tricksGrid);p.append(fields);const yes=el('button',{class:'yes-bid'},`✓ Ja – Ansage stimmt (${state.draft[i].bid} Stiche)`);yes.onclick=()=>{state.draft[i].tricks=Number(state.draft[i].bid)||0;save();maybeAutoAdvanceRound()};p.append(yes);let note=el('div',{class:'muted'},state.draft[i].bid===state.draft[i].tricks?`Richtig: ${state.draft[i].tricks} Stiche + 10${cardsThisRound>1&&state.draft[i].tricks===cardsThisRound?' · Durchmarsch-Bonus':''} = ${pts(i)} Punkte`:`Falsch: ${state.draft[i].tricks} Stiche − 5${cardsThisRound>1&&state.draft[i].tricks===cardsThisRound?' · Durchmarsch-Bonus':''} = ${pts(i)} Punkte`);note.style.marginTop='10px';p.append(note);area.append(p)});
+ tricksField.append(tricksGrid);fields.append(tricksField);p.append(fields);
+ const yes=el('button',{class:'yes-bid'},`✓ Ja – Ansage stimmt (${d.bid} Stiche)`);
+ yes.onclick=()=>{d.tricks=Number(d.bid)||0;save()};
+ p.append(yes);
+ const note=el('div',{class:'muted'},d.bid===d.tricks?`Richtig: ${d.tricks} Stiche + 10 = ${pts(idx)} Punkte`:`Falsch: ${d.tricks} Stiche − 5 = ${pts(idx)} Punkte`);
+ note.style.marginTop='10px';p.append(note);
+ const actions=el('div',{class:'turn-actions'});
+ if(state.scoreCursor>0){const back=el('button',{},'← Zurück');back.onclick=()=>{state.scoreCursor--;save()};actions.append(back)}
+ const next=el('button',{class:'primary'},state.scoreCursor===order.length-1?'Eingaben prüfen →':'Nächster Spieler →');
+ next.onclick=()=>{
+  if(state.scoreCursor<order.length-1){state.scoreCursor++;save();return}
+  const total=state.draft.reduce((sum,x)=>sum+(Number(x.tricks)||0),0);
+  if(total!==cardsThisRound){appMessage(`Bisher sind ${total} von ${cardsThisRound} Stichen eingetragen. Bitte prüft die Eingaben.`);return}
+  state.scoreCursor=0;save();maybeAutoAdvanceRound();
+ };
+ actions.append(next);p.append(actions);area.append(p);
 }
 let overview=document.getElementById('roundOverviewRows');overview.replaceChildren();
 state.players.forEach((player,i)=>{
@@ -437,7 +568,7 @@ state.players.forEach((player,i)=>{const wrap=el('div',{class:'player'});const l
 let names=document.getElementById('names');names.replaceChildren();state.players.forEach((player,i)=>{let r=el('div',{class:'row player'});let input=el('input',{value:player.name,placeholder:`Spieler ${i+1}`});input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;save()};let del=el('button',{class:'small'},'✕');del.disabled=state.players.length<=3;del.onclick=()=>{if(state.players.length<=3)return;const removed=state.players.splice(i,1)[0];state.draft.splice(i,1);state.history.forEach(h=>{const idx=(h.playerIds||[]).indexOf(removed.id);if(idx>=0){h.playerIds.splice(idx,1);h.scores.splice(idx,1);if(h.names)h.names.splice(idx,1)}});save()};r.append(input,del);names.append(r)});
 const statsEl=document.getElementById('cardStats'),statsRows=document.getElementById('cardStatsRows');statsRows.replaceChildren();statsEl.classList.toggle('hide',!state.gameFinished);if(state.gameFinished){const sums=state.players.map(p=>({id:p.id,name:p.name,plusReceived:0,minusReceived:0}));state.history.forEach(h=>{(h.playerIds||[]).forEach((id,ix)=>{const target=sums.find(x=>x.id===id),d=(h.draft||[])[ix];if(target&&d){target.plusReceived+=Number(d.plusReceived)||0;target.minusReceived+=Number(d.minusReceived)||0}})});const table=el('table',{style:'width:100%;border-collapse:collapse'});const thead=el('thead');const hr=el('tr');['Spieler','+5 bekommen','−5 bekommen'].forEach(t=>hr.append(el('th',{style:'padding:8px;text-align:left;border-bottom:1px solid #ffffff55'},t)));thead.append(hr);table.append(thead);const tbody=el('tbody');sums.forEach(x=>{const tr=el('tr');tr.append(el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},x.name),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.plusReceived)),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.minusReceived)));tbody.append(tr)});table.append(tbody);statsRows.append(table);[['minusReceived','−5-Karten bekommen'],['plusReceived','+5-Karten bekommen']].forEach(([key,label])=>{const max=Math.max(0,...sums.map(x=>x[key]));const winners=sums.filter(x=>x[key]===max&&max>0);const row=el('div',{class:'historyrow'});row.append(el('strong',{},label+' – Spitzenreiter'),el('span',{},max===0?'Noch keine Angaben':winners.map(x=>x.name).join(', ')),el('strong',{},String(max)));statsRows.append(row)})}const phaseNow=state.phase||0;const phaseScore=phaseTotals(phaseNow),hinScore=phaseTotals(0),returnScore=phaseTotals(1),allScore=combinedTotals();const rankScore=state.gameFinished?allScore:phaseScore;document.querySelector('#ranking .roundtitle').textContent=state.gameFinished?'🏆 Endstand · Hin- und Rückrunde':`🏆 Punktestand · ${phaseNow===1?'Rückrunde':'Hinrunde'}`;let ranked=state.players.map((p,i)=>({name:p.name,score:rankScore[i],hin:hinScore[i],back:returnScore[i],i})).sort((a,b)=>b.score-a.score);let rl=document.getElementById('rankList');rl.replaceChildren();let place=0,lastScore=null;ranked.forEach((p,i)=>{if(i===0||p.score!==lastScore)place=i+1;lastScore=p.score;let r=el('div',{class:'row between player'});let left=el('div',{class:'row'});const rankMarker=place===1?'🥇':place===2?'🥈':place===3?'🥉':`${place}.`;left.append(el('span',{class:'rank'},rankMarker),el('span',{class:'name'},p.name));const scoreBox=el('div',{style:'text-align:right'});scoreBox.append(el('div',{class:'score'},`${p.score} P.`),el('div',{class:'muted'},`Hin ${p.hin} · Rück ${p.back}`));r.append(left,scoreBox);rl.append(r)});
 let hist=document.getElementById('sheetHistory');hist.replaceChildren();if(!state.history.length)hist.append(el('p',{class:'muted'},'Noch keine Runden abgeschlossen.'));state.history.forEach(h=>{let r=el('div',{class:'historyrow'});r.append(el('strong',{},`R${(h.phase||0)*state.maxRounds+h.round} · ${h.cards||''}K`),el('span',{},`${h.scores.map((s,i)=>`${(h.names&&h.names[i])||state.players.find(p=>p.id===(h.playerIds||[])[i])?.name||'Spieler'}: ${s} P.`).join(' · ')}${h.tricks?' | Stiche: '+h.tricks.map((t,i)=>`${(h.names&&h.names[i])||'Spieler'} ${t}`).join(', '):''}`),el('strong',{},`${h.scores.reduce((a,b)=>a+b,0)} P.`));hist.append(r)});
-document.getElementById('undo').disabled=!state.history.length;document.getElementById('finish').textContent=state.round>=state.maxRounds?'Spiel abschließen 🏆':'Runde abschließen →';if(state.bidsSubmitted&&enteredTricks===cardsThisRound&&!state.autoAdvancing)maybeAutoAdvanceRound();}
+document.getElementById('undo').disabled=!state.history.length;document.getElementById('finish').textContent=state.round>=state.maxRounds?'Spiel abschließen 🏆':'Runde abschließen →';if(state.bidsSubmitted&&enteredTricks===cardsThisRound&&!state.autoAdvancing&&Number(state.scoreCursor||0)>=state.players.length-1)maybeAutoAdvanceRound();}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['game','ranking','settings','scoreSheet'].forEach(id=>document.getElementById(id).classList.toggle('hide',id!==b.dataset.tab))});
 document.getElementById('finish').onclick=()=>completeRound(false);
 function undoLastRound(){if(!state.history.length){alert('Es gibt noch keine abgeschlossene Runde.');return}const last=state.history[state.history.length-1];const label=`Runde ${last.round||state.round}${Number(last.phase)===1?' (Rückrunde)':' (Hinrunde)'}`;appConfirm(`${label} zur Bearbeitung wieder öffnen? Die vorherigen Runden und Punkte bleiben erhalten. Die Ansagen bleiben gesperrt; gewonnene Stiche und Sonderkarten kannst du korrigieren.`,()=>{const h=state.history.pop();state.round=h.round;state.phase=Number.isInteger(h.phase)?h.phase:0;state.bidsSubmitted=true;state.bidCursor=0;state.autoAdvancing=false;state.returnPromptPending=false;state.gameFinished=false;state.draft=JSON.parse(JSON.stringify(h.draft||newDraft()));state.draft.forEach(d=>{d.bidSet=true});document.getElementById('err').textContent='Letzte Runde wieder geöffnet. Ansagen sind gesperrt; Stiche und Sonderkarten können korrigiert werden.';document.querySelector('[data-tab="game"]').click();save()})}
@@ -460,5 +591,11 @@ document.getElementById('importBackupButton').onclick=()=>document.getElementByI
 document.getElementById('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());const restored=parsed.state||parsed;if(!Array.isArray(restored.players)||!Array.isArray(restored.history))throw new Error('Ungültige Sicherungsdatei');appConfirm('Den aktuellen Spielstand durch die Sicherungsdatei ersetzen?',()=>{state=restored;save();alert('Spielstand wurde wiederhergestellt.')});return}catch(err){alert('Die Datei konnte nicht gelesen werden. Bitte wähle eine RAGE-Sicherung im JSON-Format.')}finally{e.target.value=''}};
 // Recalculate saved round scores from round data, including received special cards.
 state.history.forEach(h=>{if(Array.isArray(h.draft)&&Array.isArray(h.scores)){h.scores=h.draft.map((d,i)=>roundPoints(d,Number(h.cards)||1))}});
+
+document.getElementById('fontSizeSetting').onchange=e=>{uiPrefs.fontScale=e.target.value;saveUiPrefs()};
+document.getElementById('highContrastSetting').onchange=e=>{uiPrefs.highContrast=e.target.checked;saveUiPrefs()};
+document.getElementById('reduceMotionSetting').onchange=e=>{uiPrefs.reduceMotion=e.target.checked;saveUiPrefs()};
+document.getElementById('openBackupTab').onclick=()=>document.querySelector('[data-tab="scoreSheet"]').click();
+applyUiPrefs();
 render();
 </script></body></html>
