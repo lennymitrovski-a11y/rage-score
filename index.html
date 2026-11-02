@@ -180,7 +180,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
      <option value="3">3 Spieler</option><option value="4" selected>4 Spieler</option><option value="5">5 Spieler</option><option value="6">6 Spieler</option><option value="7">7 Spieler</option><option value="8">8 Spieler</option>
    </select>
    <div class="roundtitle" style="margin-top:18px">👥 Zuerst die Spielernamen eingeben</div>
-   <div id="setupPlayerNames"></div>
+   <datalist id="savedPlayerNames"></datalist><div id="setupPlayerNames"></div>
    <div class="panel" style="margin:12px 0;background:rgba(2,44,84,.45)">
      <div class="roundtitle" style="font-size:17px">🔄 Startreihenfolge festlegen</div>
      <label for="initialDealer" class="muted">Wer gibt in der ersten Runde die Karten?</label>
@@ -256,7 +256,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <p class="muted">Sichere deinen Spielstand oder stelle eine vorhandene Sicherung wieder her.</p>
   <button id="openBackupTab" class="small">Spielstand sichern / wiederherstellen →</button>
  </div>
- <div class="panel"><div class="roundtitle">Mitspieler</div><p class="muted">Namen ändern oder Spieler hinzufügen/entfernen.</p><div id="names"></div><div class="actions"><button id="addPlayer" class="primary">＋ Spieler hinzufügen</button></div></div><div class="panel"><label for="maxRounds" class="muted">Rundenanzahl</label><input id="maxRounds" type="number" min="1" max="20" value="10"><p class="muted">Die Änderungen werden automatisch auf diesem iPhone gespeichert.</p></div></main>
+ <div class="panel"><div class="roundtitle">👥 Spielerprofile</div><p class="muted">Bereits verwendete Spielernamen werden auf diesem Gerät gemerkt und beim nächsten Spiel als Vorschläge angeboten.</p></div><div class="panel"><div class="roundtitle">Mitspieler</div><p class="muted">Namen ändern oder Spieler hinzufügen/entfernen.</p><div id="names"></div><div class="actions"><button id="addPlayer" class="primary">＋ Spieler hinzufügen</button></div></div><div class="panel"><label for="maxRounds" class="muted">Rundenanzahl</label><input id="maxRounds" type="number" min="1" max="20" value="10"><p class="muted">Die Änderungen werden automatisch auf diesem iPhone gespeichert.</p></div></main>
 <footer>RAGE Score · Spielstände bleiben in diesem Browser gespeichert</footer>
 
 <section id="rules" class="rules-wrap">
@@ -318,6 +318,18 @@ document.addEventListener('click',function(e){if(e.target&&e.target.id==='appMes
 document.addEventListener('keydown',function(e){const o=document.getElementById('appMessage');if(!o||o.classList.contains('hide'))return;if(e.key==='Escape'){closeAppMessage(false)}if(e.key==='Enter'){closeAppMessage(true)}});
 
 
+const PLAYER_NAMES_KEY='rage-score-player-names-v1';
+function rememberPlayerName(name){
+ const clean=String(name||'').trim();if(!clean||/^Spieler \\d+$/.test(clean))return;
+ let names=[];try{names=JSON.parse(localStorage.getItem(PLAYER_NAMES_KEY)||'[]')}catch(e){}
+ names=[clean,...names.filter(n=>String(n).toLowerCase()!==clean.toLowerCase())].slice(0,20);
+ localStorage.setItem(PLAYER_NAMES_KEY,JSON.stringify(names));
+}
+function renderSavedPlayerNames(){
+ const list=document.getElementById('savedPlayerNames');if(!list)return;list.replaceChildren();
+ let names=[];try{names=JSON.parse(localStorage.getItem(PLAYER_NAMES_KEY)||'[]')}catch(e){}
+ names.forEach(name=>list.append(el('option',{value:name})));
+}
 const UI_PREFS_KEY='rage-score-ui-settings-v1';
 let uiPrefs={fontScale:'1',highContrast:false,reduceMotion:false,compactMode:true};
 try{const savedPrefs=JSON.parse(localStorage.getItem(UI_PREFS_KEY)||'{}');uiPrefs={...uiPrefs,...savedPrefs}}catch(e){}
@@ -563,8 +575,8 @@ renderLiveScoreSheet();
 document.getElementById('maxRounds').value=state.maxRounds;
 
 document.getElementById('setupPlayerCount').value=String(state.players.length);
-const setupNames=document.getElementById('setupPlayerNames');setupNames.replaceChildren();
-state.players.forEach((player,i)=>{const wrap=el('div',{class:'player'});const label=el('label',{class:'muted'},`Spieler ${i+1}`);const isDefault=!player.name||player.name===`Spieler ${i+1}`;const input=el('input',{value:isDefault?'':player.name,placeholder:`Name von Spieler ${i+1}`});input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;save()};wrap.append(label,input);setupNames.append(wrap)});renderSetupRotationSelectors();
+renderSavedPlayerNames();const setupNames=document.getElementById('setupPlayerNames');setupNames.replaceChildren();
+state.players.forEach((player,i)=>{const wrap=el('div',{class:'player'});const label=el('label',{class:'muted'},`Spieler ${i+1}`);const isDefault=!player.name||player.name===`Spieler ${i+1}`;const input=el('input',{value:isDefault?'':player.name,placeholder:`Name von Spieler ${i+1}`});input.setAttribute('list','savedPlayerNames');input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;rememberPlayerName(state.players[i].name);save()};wrap.append(label,input);setupNames.append(wrap)});renderSetupRotationSelectors();
 let names=document.getElementById('names');names.replaceChildren();state.players.forEach((player,i)=>{let r=el('div',{class:'row player'});let input=el('input',{value:player.name,placeholder:`Spieler ${i+1}`});input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;save()};let del=el('button',{class:'small'},'✕');del.disabled=state.players.length<=3;del.onclick=()=>{if(state.players.length<=3)return;const removed=state.players.splice(i,1)[0];state.draft.splice(i,1);state.history.forEach(h=>{const idx=(h.playerIds||[]).indexOf(removed.id);if(idx>=0){h.playerIds.splice(idx,1);h.scores.splice(idx,1);if(h.names)h.names.splice(idx,1)}});save()};r.append(input,del);names.append(r)});
 const statsEl=document.getElementById('cardStats'),statsRows=document.getElementById('cardStatsRows');statsRows.replaceChildren();statsEl.classList.toggle('hide',!state.gameFinished);if(state.gameFinished){const sums=state.players.map(p=>({id:p.id,name:p.name,plusReceived:0,minusReceived:0}));state.history.forEach(h=>{(h.playerIds||[]).forEach((id,ix)=>{const target=sums.find(x=>x.id===id),d=(h.draft||[])[ix];if(target&&d){target.plusReceived+=Number(d.plusReceived)||0;target.minusReceived+=Number(d.minusReceived)||0}})});const table=el('table',{style:'width:100%;border-collapse:collapse'});const thead=el('thead');const hr=el('tr');['Spieler','+5 bekommen','−5 bekommen'].forEach(t=>hr.append(el('th',{style:'padding:8px;text-align:left;border-bottom:1px solid #ffffff55'},t)));thead.append(hr);table.append(thead);const tbody=el('tbody');sums.forEach(x=>{const tr=el('tr');tr.append(el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},x.name),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.plusReceived)),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.minusReceived)));tbody.append(tr)});table.append(tbody);statsRows.append(table);[['minusReceived','−5-Karten bekommen'],['plusReceived','+5-Karten bekommen']].forEach(([key,label])=>{const max=Math.max(0,...sums.map(x=>x[key]));const winners=sums.filter(x=>x[key]===max&&max>0);const row=el('div',{class:'historyrow'});row.append(el('strong',{},label+' – Spitzenreiter'),el('span',{},max===0?'Noch keine Angaben':winners.map(x=>x.name).join(', ')),el('strong',{},String(max)));statsRows.append(row)})}const phaseNow=state.phase||0;const phaseScore=phaseTotals(phaseNow),hinScore=phaseTotals(0),returnScore=phaseTotals(1),allScore=combinedTotals();const rankScore=state.gameFinished?allScore:phaseScore;document.querySelector('#ranking .roundtitle').textContent=state.gameFinished?'🏆 Endstand · Hin- und Rückrunde':`🏆 Punktestand · ${phaseNow===1?'Rückrunde':'Hinrunde'}`;let ranked=state.players.map((p,i)=>({name:p.name,score:rankScore[i],hin:hinScore[i],back:returnScore[i],i})).sort((a,b)=>b.score-a.score);let rl=document.getElementById('rankList');rl.replaceChildren();let place=0,lastScore=null;ranked.forEach((p,i)=>{if(i===0||p.score!==lastScore)place=i+1;lastScore=p.score;let r=el('div',{class:'row between player'});let left=el('div',{class:'row'});const rankMarker=place===1?'🥇':place===2?'🥈':place===3?'🥉':`${place}.`;left.append(el('span',{class:'rank'},rankMarker),el('span',{class:'name'},p.name));const scoreBox=el('div',{style:'text-align:right'});scoreBox.append(el('div',{class:'score'},`${p.score} P.`),el('div',{class:'muted'},`Hin ${p.hin} · Rück ${p.back}`));r.append(left,scoreBox);rl.append(r)});
 let hist=document.getElementById('sheetHistory');hist.replaceChildren();if(!state.history.length)hist.append(el('p',{class:'muted'},'Noch keine Runden abgeschlossen.'));state.history.forEach(h=>{let r=el('div',{class:'historyrow'});r.append(el('strong',{},`R${(h.phase||0)*state.maxRounds+h.round} · ${h.cards||''}K`),el('span',{},`${h.scores.map((s,i)=>`${(h.names&&h.names[i])||state.players.find(p=>p.id===(h.playerIds||[])[i])?.name||'Spieler'}: ${s} P.`).join(' · ')}${h.tricks?' | Stiche: '+h.tricks.map((t,i)=>`${(h.names&&h.names[i])||'Spieler'} ${t}`).join(', '):''}`),el('strong',{},`${h.scores.reduce((a,b)=>a+b,0)} P.`));hist.append(r)});
