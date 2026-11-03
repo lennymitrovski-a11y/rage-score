@@ -46,6 +46,20 @@ footer{text-align:center;color:#d9eaff;font-size:12px;padding:14px 0;text-shadow
 #sheetHistory .historyrow{grid-template-columns:40px minmax(0,1fr) 48px;gap:4px;font-size:11px;padding:7px 0}
 #sheetHistory .historyrow span{overflow-wrap:anywhere}
 
+
+.sheet-rounds{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.sheet-round{background:#fff;color:#17283b;border:2px solid #d7e4f3;border-radius:12px;overflow:hidden;padding:0 12px}
+.sheet-round-title{background:#0759a1;color:#fff;font-weight:900;font-size:15px;margin:0 -12px 4px;padding:10px 12px}
+.sheet-player{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid #d7e0ea}
+.sheet-player:last-child{border-bottom:0}
+.sheet-player-name{font-size:15px;min-width:0;overflow-wrap:anywhere}
+.sheet-player-values{display:flex;align-items:center;gap:12px;white-space:nowrap}
+.sheet-tricks{color:#0759a1;font-weight:750;font-size:14px}
+.sheet-points{color:#17283b;font-size:15px}
+.sheet-current{border:3px solid #f2c94c;background:#fff7d6}
+.sheet-current .sheet-round-title{background:#e5262f}
+.sheet-current .sheet-player{border-color:#eadcae}
+
 .rules-wrap{max-width:900px;margin:18px auto 26px;padding:0 12px}
 .rules-panel{border:3px solid var(--line);box-shadow:0 4px 0 #142d47}
 .rules-panel summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -223,15 +237,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  <div class="panel">
   <div class="roundtitle">📋 Live-Spielzettel</div>
   <div class="actions"><button id="exportBackup" class="small">Spielstand sichern ⤓</button><button id="importBackupButton" class="small">Spielstand wiederherstellen ⤒</button><input id="importBackup" type="file" accept="application/json,.json" class="hide"></div>
-  <p class="muted">Spielzettel und Rundenverlauf auf einen Blick – ohne seitliches Scrollen.</p>
-  <div class="live-sheet-scroll" style="width:100%;overflow-x:hidden;border:2px solid #fff0db;border-radius:8px;background:#fff;color:#17283b">
-   <table id="liveScoreTable" style="table-layout:fixed;border-collapse:collapse;width:100%;min-width:0;color:#17283b;font-size:11px">
-    <thead id="liveScoreHead"></thead><tbody id="liveScoreBody"></tbody><tfoot id="liveScoreFoot"></tfoot>
-   </table>
-  </div>
-  <p class="muted">Stiche oben, Punkte darunter. Die laufende Runde ist gelb markiert.</p>
-  <div class="roundtitle" style="margin-top:16px">Rundenverlauf</div>
-  <div id="sheetHistory"></div>
+  <p class="muted">Alle Runden untereinander. Pro Runde siehst du für jeden Spieler Stiche und Punkte.</p>
+  <div id="sheetRounds" class="sheet-rounds"></div>
  </div>
 </main>
 <main id="settings" class="hide">
@@ -391,48 +398,33 @@ function currentCardsThisRound(){const legDirection=state.phase===0?state.direct
 function roundPoints(d,cards){const tricks=Number(d.tricks)||0;const sweepBonus=(cards>1&&tricks===cards)?tricks:0;const bidPoints=!d.bidSet?0:(Number(d.bid)===tricks?10:-5);const cardPoints=(Number(d.plusReceived)||0)*5-(Number(d.minusReceived)||0)*5;return tricks+sweepBonus+bidPoints+cardPoints}
 function pts(i){return roundPoints(state.draft[i],currentCardsThisRound())}
 function renderLiveScoreSheet(){
- const head=document.getElementById('liveScoreHead'),body=document.getElementById('liveScoreBody'),foot=document.getElementById('liveScoreFoot');
- if(!head||!body||!foot)return;
- head.replaceChildren();body.replaceChildren();foot.replaceChildren();
- const hr=el('tr');hr.append(el('th',{},'Runde'));
- state.players.forEach(p=>hr.append(el('th',{},p.name||'Spieler')));
- head.append(hr);
- const totalByPlayer=state.gameFinished?combinedTotals():phaseTotals(state.phase||0);
- state.history.forEach((round,ri)=>{
-   const tr=el('tr');
-   const phaseName=round.phase===1?'Rück':'Hin';
-   tr.append(el('th',{},`${ri+1}. ${phaseName}`));
+ const area=document.getElementById('sheetRounds');
+ if(!area)return;
+ area.replaceChildren();
+ const addRound=(round,roundIndex,isCurrent=false)=>{
+   const card=el('section',{class:'sheet-round'+(isCurrent?' sheet-current':'')});
+   const title=el('div',{class:'sheet-round-title'},`${roundIndex}. Runde · ${Number(round.phase||0)===1?'Rückrunde':'Hinrunde'}${round.cards?` · ${round.cards} Karten`:''}${isCurrent?' · JETZT':''}`);
+   card.append(title);
+   const ids=round.playerIds||state.players.map(p=>p.id);
    state.players.forEach((p,i)=>{
-     const idx=(round.playerIds||[]).indexOf(p.id);
-     const td=el('td');
-     if(idx>=0){
-       const tricks=round.tricks?.[idx] ?? round.draft?.[idx]?.tricks ?? '—';
-       const score=round.scores?.[idx] ?? '—';
-       td.append(el('div',{class:'tricks'},`${tricks} St.`),el('div',{class:'points'},`${score} P.`));
-     }else td.textContent='—';
-     tr.append(td);
+     const idx=ids.indexOf(p.id);
+     const name=(round.names&&round.names[idx])||p.name||'Spieler';
+     const tricks=idx>=0?(round.tricks?.[idx]??round.draft?.[idx]?.tricks??'—'):'—';
+     const score=idx>=0?(round.scores?.[idx]??'—'):'—';
+     const line=el('div',{class:'sheet-player'});
+     line.append(el('strong',{class:'sheet-player-name'},name));
+     const values=el('div',{class:'sheet-player-values'});
+     values.append(el('span',{class:'sheet-tricks'},`${tricks} Stiche`),el('strong',{class:'sheet-points'},`${score} Punkte`));
+     line.append(values);card.append(line);
    });
-   body.append(tr);
- });
+   area.append(card);
+ };
+ if(!state.history.length && (state.setupPending||state.returnPromptPending||state.gameFinished))area.append(el('p',{class:'muted'},'Noch keine Runden abgeschlossen.'));
+ state.history.forEach((round,ri)=>addRound(round,ri+1,false));
  if(!state.setupPending&&!state.returnPromptPending&&!state.gameFinished){
-   const tr=el('tr',{class:'current-round'});
-   tr.append(el('th',{},`${state.history.length+1}. Jetzt`));
-   state.players.forEach((p,i)=>{
-     const td=el('td');
-     const d=state.draft[i]||{tricks:0,bid:0,bidSet:false};
-     const score=pts(i);
-     td.append(el('div',{class:'tricks'},`${Number(d.tricks)||0} St.`),el('div',{class:'points'},`${score} P.`));
-     tr.append(td);
-   });
-   body.append(tr);
+   const current={phase:state.phase||0,cards:currentCardsThisRound(),playerIds:state.players.map(p=>p.id),names:state.players.map(p=>p.name),tricks:state.draft.map(d=>Number(d.tricks)||0),scores:state.players.map((p,i)=>pts(i))};
+   addRound(current,state.history.length+1,true);
  }
- const fr=el('tr');fr.append(el('th',{},'Gesamt'));
- state.players.forEach((p,i)=>{
-   let current=0;
-   if(!state.setupPending&&!state.returnPromptPending&&!state.gameFinished)current=pts(i);
-   fr.append(el('td',{},`${totalByPlayer[i]+current} P.`));
- });
- foot.append(fr);
 }
 
 function el(tag,attrs={},text=''){let n=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!=='')n.textContent=text;return n}
@@ -578,7 +570,7 @@ renderSavedPlayerNames();const setupNames=document.getElementById('setupPlayerNa
 state.players.forEach((player,i)=>{const wrap=el('div',{class:'player'});const label=el('label',{class:'muted'},`Spieler ${i+1}`);const isDefault=!player.name||player.name===`Spieler ${i+1}`;const input=el('input',{value:isDefault?'':player.name,placeholder:`Name von Spieler ${i+1}`});input.setAttribute('list','savedPlayerNames');input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;rememberPlayerName(state.players[i].name);save()};wrap.append(label,input);setupNames.append(wrap)});renderSetupRotationSelectors();
 let names=document.getElementById('names');names.replaceChildren();state.players.forEach((player,i)=>{let r=el('div',{class:'row player'});let input=el('input',{value:player.name,placeholder:`Spieler ${i+1}`});input.onchange=()=>{state.players[i].name=input.value.trim()||`Spieler ${i+1}`;save()};let del=el('button',{class:'small'},'✕');del.disabled=state.players.length<=3;del.onclick=()=>{if(state.players.length<=3)return;const removed=state.players.splice(i,1)[0];state.draft.splice(i,1);state.history.forEach(h=>{const idx=(h.playerIds||[]).indexOf(removed.id);if(idx>=0){h.playerIds.splice(idx,1);h.scores.splice(idx,1);if(h.names)h.names.splice(idx,1)}});save()};r.append(input,del);names.append(r)});
 const statsEl=document.getElementById('cardStats'),statsRows=document.getElementById('cardStatsRows');statsRows.replaceChildren();statsEl.classList.toggle('hide',!state.gameFinished);if(state.gameFinished){const sums=state.players.map(p=>({id:p.id,name:p.name,plusReceived:0,minusReceived:0}));state.history.forEach(h=>{(h.playerIds||[]).forEach((id,ix)=>{const target=sums.find(x=>x.id===id),d=(h.draft||[])[ix];if(target&&d){target.plusReceived+=Number(d.plusReceived)||0;target.minusReceived+=Number(d.minusReceived)||0}})});const table=el('table',{style:'width:100%;border-collapse:collapse'});const thead=el('thead');const hr=el('tr');['Spieler','+5 bekommen','−5 bekommen'].forEach(t=>hr.append(el('th',{style:'padding:8px;text-align:left;border-bottom:1px solid #ffffff55'},t)));thead.append(hr);table.append(thead);const tbody=el('tbody');sums.forEach(x=>{const tr=el('tr');tr.append(el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},x.name),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.plusReceived)),el('td',{style:'padding:8px;border-bottom:1px solid #ffffff33'},String(x.minusReceived)));tbody.append(tr)});table.append(tbody);statsRows.append(table);[['minusReceived','−5-Karten bekommen'],['plusReceived','+5-Karten bekommen']].forEach(([key,label])=>{const max=Math.max(0,...sums.map(x=>x[key]));const winners=sums.filter(x=>x[key]===max&&max>0);const row=el('div',{class:'historyrow'});row.append(el('strong',{},label+' – Spitzenreiter'),el('span',{},max===0?'Noch keine Angaben':winners.map(x=>x.name).join(', ')),el('strong',{},String(max)));statsRows.append(row)})}const phaseNow=state.phase||0;const phaseScore=phaseTotals(phaseNow),hinScore=phaseTotals(0),returnScore=phaseTotals(1),allScore=combinedTotals();const rankScore=state.gameFinished?allScore:phaseScore;document.querySelector('#ranking .roundtitle').textContent=state.gameFinished?'🏆 Endstand · Hin- und Rückrunde':`🏆 Punktestand · ${phaseNow===1?'Rückrunde':'Hinrunde'}`;let ranked=state.players.map((p,i)=>({name:p.name,score:rankScore[i],hin:hinScore[i],back:returnScore[i],i})).sort((a,b)=>b.score-a.score);let rl=document.getElementById('rankList');rl.replaceChildren();let place=0,lastScore=null;ranked.forEach((p,i)=>{if(i===0||p.score!==lastScore)place=i+1;lastScore=p.score;let r=el('div',{class:'row between player'});let left=el('div',{class:'row'});const rankMarker=place===1?'🥇':place===2?'🥈':place===3?'🥉':`${place}.`;left.append(el('span',{class:'rank'},rankMarker),el('span',{class:'name'},p.name));const scoreBox=el('div',{style:'text-align:right'});scoreBox.append(el('div',{class:'score'},`${p.score} P.`),el('div',{class:'muted'},`Hin ${p.hin} · Rück ${p.back}`));r.append(left,scoreBox);rl.append(r)});
-let hist=document.getElementById('sheetHistory');hist.replaceChildren();if(!state.history.length)hist.append(el('p',{class:'muted'},'Noch keine Runden abgeschlossen.'));state.history.forEach(h=>{let r=el('div',{class:'historyrow'});r.append(el('strong',{},`R${(h.phase||0)*state.maxRounds+h.round} · ${h.cards||''}K`),el('span',{},`${h.scores.map((s,i)=>`${(h.names&&h.names[i])||state.players.find(p=>p.id===(h.playerIds||[])[i])?.name||'Spieler'}: ${s} P.`).join(' · ')}${h.tricks?' | Stiche: '+h.tricks.map((t,i)=>`${(h.names&&h.names[i])||'Spieler'} ${t}`).join(', '):''}`),el('strong',{},`${h.scores.reduce((a,b)=>a+b,0)} P.`));hist.append(r)});
+
 document.getElementById('undo').disabled=!state.history.length;document.getElementById('finish').textContent=state.round>=state.maxRounds?'Spiel abschließen 🏆':'Runde abschließen →';}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['game','ranking','settings','scoreSheet'].forEach(id=>document.getElementById(id).classList.toggle('hide',id!==b.dataset.tab))});
 document.getElementById('finish').onclick=()=>completeRound(false);
